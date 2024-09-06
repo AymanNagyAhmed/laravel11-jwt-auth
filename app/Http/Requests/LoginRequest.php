@@ -7,7 +7,7 @@ use App\Helpers\ResponseHelper;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Contracts\Validation\Validator;
 
-class StoreUserRequest extends FormRequest
+class LoginRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,9 +25,8 @@ class StoreUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "name" => ['required', 'string'],
-            "email" => ['required', 'email', 'unique:users,email'],
-            "password" => ['required', 'string', 'confirmed'],
+            "email" => ['required', 'email', 'exists:users,email'],
+            'password' => ['required', 'string'],
         ];
     }
 
