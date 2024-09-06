@@ -4,7 +4,7 @@ namespace App\Repositories;
 
 use App\Interfaces\UserInterface;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class UserRepository implements UserInterface
 {
@@ -13,9 +13,20 @@ class UserRepository implements UserInterface
      *
      * @return array
      */
-    public function getUsers(): array
+    public function getUsers(int $perPage = 10): LengthAwarePaginator
     {
-        return User::all()->toArray();
+        return User::paginate($perPage);
+    }
+
+    /**
+     * Retrieve a user by their ID.
+     *
+     * @param int $id The ID of the user.
+     * @return User|null The user object if found, null otherwise.
+     */
+    public function getUserById(int $id): ?User
+    {
+        return User::find($id);
     }
 
     /**
@@ -29,11 +40,6 @@ class UserRepository implements UserInterface
         return User::create($data);
     }
 
-    // public function getUserById(User $user): array
-    // {
-    //     return User::findOrFail($id)->toArray();
-    // }
-
     /**
      * Update a user.
      *
@@ -41,7 +47,7 @@ class UserRepository implements UserInterface
      * @param array $data The data to update the user with.
      * @return User The updated user.
      */
-    public function updateUser(User $id, array $data): User
+    public function updateUser(int $id, array $data): User
     {
         $user = User::findOrFail($id);
         $user->update($data);
@@ -54,8 +60,13 @@ class UserRepository implements UserInterface
      * @param User $use The user to be deleted.
      * @return void
      */
-    public function deleteUser(User $use): void
+    public function deleteUser(int $id): void
     {
-        $user->delete();
+        User::findOrFail($id)->delete();
+    }
+
+    public function getUserByEmail(string $email): ?User
+    {
+        return User::where('email', $email)->first();
     }
 }

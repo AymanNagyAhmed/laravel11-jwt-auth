@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Services;
+
+use App\Http\Resources\UserResource;
 use App\Repositories\UserRepository;
 use App\Models\User;
 
@@ -16,18 +18,17 @@ class UserService
      *
      * @param UserRepository $userRepository The user repository.
      */
-    public function __construct(private UserRepository $userRepository)
-    {
-    }
+    public function __construct(private UserRepository $userRepository) {}
 
     /**
      * Retrieves an array of users.
      *
-     * @return array The array of users.
+     * @return 
      */
-    public function getUsers(): array
+    public function getUsers(int $perPage = 10)
     {
-        return $this->userRepository->getUsers();
+        $users = $this->userRepository->getUsers($perPage);
+        return UserResource::collection($users);
     }
 
     /**
@@ -47,9 +48,9 @@ class UserService
      * @param User $user The user object.
      * @return array The user data as an array.
      */
-    public function getUserById(User $user): array
+    public function getUserById(int $id): User
     {
-        return $this->userRepository->getUserById($User);
+        return $this->userRepository->getUserById($id);
     }
 
     /**
@@ -59,9 +60,9 @@ class UserService
      * @param array $data The data to update the user with.
      * @return User The updated user.
      */
-    public function updateUser(User $user, array $data): User
+    public function updateUser(int $id, array $data): User
     {
-        return $this->userRepository->updateUser($user, $data);
+        return $this->userRepository->updateUser($id, $data);
     }
 
     /**
@@ -70,8 +71,8 @@ class UserService
      * @param User $user The user to be deleted.
      * @return void
      */
-    public function deleteUser(User $user): void
+    public function deleteUser(int $id): void
     {
-        $this->userRepository->deleteUser($user);
+        $this->userRepository->deleteUser($id);
     }
 }

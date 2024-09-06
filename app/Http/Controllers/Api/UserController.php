@@ -16,26 +16,26 @@ class UserController extends Controller
      * UserController constructor.
      * 
      */
-    public function __construct(private UserService $service){}
+    public function __construct(private UserService $service) {}
     /**
      * Display a listing of the resource.
      * 
      * @return JsonResponse
      */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
         try {
-            $users = $this->service->getUsers();
-            return $users;
+            $perPage = $request->get('per_page', 15);
+            $users = $this->service->getUsers($perPage);
             return response()->json([
-                "success"=>true,
-                "users" => UserResource::collection($users),
-                "message" => "Users fetched successfully"
+                "success" => true,
+                "message" => "Users fetched successfully",
+                "data" => ["users" => UserResource::collection($users)],
             ], 200);
             // return ResponseHelper::successResponse(["users" => UserResource::collection($users)], "Users fetched successfully", 200);
         } catch (\Exception $e) {
             return response()->json([
-                "success"=>false,
+                "success" => false,
                 "message" => "Users fetch failed",
                 "errors" => $e->getMessage()
             ], $e->getCode() ?? 500);
@@ -54,14 +54,14 @@ class UserController extends Controller
         try {
             $user = $this->service->createUser($request->validated());
             return response()->json([
-                "success"=>true,
+                "success" => true,
                 "message" => "User created successfully",
-                "user" => UserResource::make($user),
+                "data" => ["user" => UserResource::make($user)],
             ], 201);
             // return ResponseHelper::successResponse(["user" => UserResource::make($user)], "User created successfully", 201);
         } catch (\Exception $e) {
             return response()->json([
-                "success"=>false,
+                "success" => false,
                 "message" => "User creation failed",
                 "errors" => $e->getMessage()
             ], $e->getCode() ?? 500);
@@ -75,18 +75,29 @@ class UserController extends Controller
      * 
      * @return JsonResponse
      */
-    public function show(User $user): JsonResponse
+    public function show(int $id): JsonResponse
     {
+
         try {
+            $user = $this->service->getUserById($id);
+            if (!$user) {
+                return response()->json([
+                    "success" => false,
+                    "message" => "User fetch failed",
+                    "errors" => "User not found"
+                ], 404);
+                // return ResponseHelper::failResponse("User not found.", [], 404);
+            }
+
             return response()->json([
-                "success"=>true,
-                "user" => UserResource::make($user),
-                "message" => "User fetched successfully"
+                "success" => true,
+                "message" => "User fetched successfully",
+                "data" => ["user" => UserResource::make($user)],
             ], 200);
             // return ResponseHelper::successResponse(["user" => UserResource::make($user)], "User fetched successfully", 200);
         } catch (\Exception $e) {
             return response()->json([
-                "success"=>false,
+                "success" => false,
                 "message" => "User fetch failed",
                 "errors" => $e->getMessage()
             ], $e->getCode() ?? 500);
@@ -101,19 +112,19 @@ class UserController extends Controller
      * 
      * @return JsonResponse
      */
-    public function update(Request $request, User $user): JsonResponse
+    public function update(Request $request, int $id): JsonResponse
     {
         try {
-            $user = $this->service->updateUser($user, $request->all());
+            $user = $this->service->updateUser($id, $request->all());
             return response()->json([
-                "success"=>true,
-                "user" => UserResource::make($user),
-                "message" => "User updated successfully"
+                "success" => true,
+                "message" => "User updated successfully",
+                "data" => ["user" => UserResource::make($user)],
             ], 200);
             // return ResponseHelper::successResponse(["user" => UserResource::make($user)], "User updated successfully", 200);
         } catch (\Exception $e) {
             return response()->json([
-                "success"=>false,
+                "success" => false,
                 "message" => "User update failed",
                 "errors" => $e->getMessage()
             ], $e->getCode() ?? 500);
@@ -127,23 +138,21 @@ class UserController extends Controller
      * 
      * @return JsonResponse
      */
-    public function destroy(User $user): JsonResponse
+    public function destroy(int $id): JsonResponse
     {
         try {
-            $this->service->deleteUser($user);
+            $this->service->deleteUser($id);
             return response()->json([
-                "success"=>true,
+                "success" => true,
                 "message" => "User deleted successfully"
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                "success"=>false,
+                "success" => false,
                 "message" => "User delete failed",
                 "errors" => $e->getMessage()
             ], $e->getCode() ?? 500);
             // return ResponseHelper::failResponse("User delete failed.", [$e->getMessage()], $e->getCode() ?? 500);
         }
-        
-        
     }
 }
